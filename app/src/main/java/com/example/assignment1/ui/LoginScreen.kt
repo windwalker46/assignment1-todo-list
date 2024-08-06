@@ -5,9 +5,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.assignment1.R
 import com.example.assignment1.viewmodels.LoginViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
@@ -30,49 +34,62 @@ fun LoginScreen(
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                if (email.isBlank() || password.isBlank()) {
-                    showError = true
-                } else {
+                if (email.isNotBlank() && password.isNotBlank()) {
                     viewModel.login(email, password)
+                    showError = false
+                } else {
+                    showError = true
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Log In")
+            Text(stringResource(R.string.login))
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onNavigateToCreateAccount) {
-            Text("Create an account")
+            Text(stringResource(R.string.create_account))
         }
 
         if (showError) {
-            Text("Please enter both email and password", color = MaterialTheme.colorScheme.error)
+            Text(
+                text = stringResource(R.string.error_empty_fields),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
-    }
 
-    LaunchedEffect(loginState) {
         when (loginState) {
-            is LoginViewModel.LoginState.Success -> {
-                onNavigateToTodoList(
-                    (loginState as LoginViewModel.LoginState.Success).token,
-                    (loginState as LoginViewModel.LoginState.Success).userId
+            is LoginViewModel.LoginState.Error -> {
+                Text(
+                    text = (loginState as LoginViewModel.LoginState.Error).message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
-            is LoginViewModel.LoginState.Error -> {
-                showError = true
+            is LoginViewModel.LoginState.Success -> {
+                LaunchedEffect(Unit) {
+                    onNavigateToTodoList(
+                        (loginState as LoginViewModel.LoginState.Success).token,
+                        (loginState as LoginViewModel.LoginState.Success).userId
+                    )
+                }
+            }
+            is LoginViewModel.LoginState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
             }
             else -> {}
         }

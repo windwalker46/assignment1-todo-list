@@ -1,5 +1,7 @@
 package com.example.assignment1.viewmodels
 
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.assignment1.api.TodoApiService
@@ -8,19 +10,28 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class CreateAccountViewModel(private val apiService: TodoApiService) : ViewModel() {
+class CreateAccountViewModel(
+    private val apiService: TodoApiService,
+    private val sharedPreferences: SharedPreferences
+) : ViewModel() {
     private val _createAccountState = MutableStateFlow<CreateAccountState>(CreateAccountState.Initial)
     val createAccountState: StateFlow<CreateAccountState> = _createAccountState
 
-    fun createAccount(email: String, password: String) {
+    fun createAccount(name: String, email: String, password: String) {
         viewModelScope.launch {
             _createAccountState.value = CreateAccountState.Loading
             try {
-                val response = apiService.registerUser(UserRequest(email, password))
-                // save token user ID
-                _createAccountState.value = CreateAccountState.Success(response.token, response.id)
+                val response = apiService.registerUser(UserRequest(email, password, name))
+                sharedPreferences.edit().apply {
+                    putString("token", response.token)
+                    putString("userId", response.id.toString())
+                    apply()
+                }
+                _createAccountState.value = CreateAccountState.Success(response.token, response.id.toString())
             } catch (e: Exception) {
-                _createAccountState.value = CreateAccountState.Error("Account creation failed. Please try again.")
+                val errorMessage = "Account creation failed: ${e.message}"
+                Log.e("CreateAccountViewModel", errorMessage, e)
+                _createAccountState.value = CreateAccountState.Error(errorMessage)
             }
         }
     }
