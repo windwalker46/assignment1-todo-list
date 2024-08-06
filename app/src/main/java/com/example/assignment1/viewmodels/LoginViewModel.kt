@@ -17,7 +17,6 @@ class LoginViewModel(private val apiService: TodoApiService) : ViewModel() {
             _loginState.value = LoginState.Loading
             try {
                 val response = apiService.loginUser(UserRequest(email, password))
-                // save token and user ID
                 _loginState.value = LoginState.Success(response.token, response.id)
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error("Login failed. Please try again.")
