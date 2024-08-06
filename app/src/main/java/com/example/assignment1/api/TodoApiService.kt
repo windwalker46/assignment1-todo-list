@@ -35,24 +35,22 @@ interface TodoApiService {
             val client = OkHttpClient.Builder()
                 .addInterceptor { chain ->
                     val original = chain.request()
-                    val originalHttpUrl = original.url
-                    val url = originalHttpUrl.newBuilder()
+                    val url = original.url.newBuilder()
                         .addQueryParameter("apikey", API_KEY)
                         .build()
-                    val requestBuilder = original.newBuilder()
+                    val request = original.newBuilder()
                         .url(url)
-                    val request = requestBuilder.build()
+                        .build()
                     chain.proceed(request)
                 }
                 .build()
 
-            val retrofit = Retrofit.Builder()
+            return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .client(client)
                 .addConverterFactory(MoshiConverterFactory.create(moshi))
                 .build()
-
-            return retrofit.create(TodoApiService::class.java)
+                .create(TodoApiService::class.java)
         }
     }
 }

@@ -13,8 +13,10 @@ data class TodoRequest(
 
 data class UserRequest(
     val email: String,
-    val password: String
+    val password: String,
+    val name: String = ""
 )
+
 
 data class UserResponse(
     val token: String,

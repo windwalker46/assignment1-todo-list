@@ -1,5 +1,6 @@
 package com.example.assignment1
 /* Ben Tran */
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,14 +22,16 @@ import com.example.assignment1.viewmodels.TodoListViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val apiService = TodoApiService.create()
+        val sharedPreferences = getSharedPreferences("TodoApp", MODE_PRIVATE)
+
         setContent {
             Assignment1Theme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val apiService = TodoApiService.create()
-                    App(apiService)
+                    App(apiService, sharedPreferences)
                 }
             }
         }
@@ -36,31 +39,28 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun App(apiService: TodoApiService) {
+fun App(apiService: TodoApiService, sharedPreferences: android.content.SharedPreferences) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
     var userId by remember { mutableStateOf("") }
-    var token by remember { mutableStateOf("") }
 
     when (val screen = currentScreen) {
         is Screen.Login -> {
-            val viewModel: LoginViewModel = viewModel { LoginViewModel(apiService) }
+            val viewModel: LoginViewModel = viewModel { LoginViewModel(apiService, sharedPreferences) }
             LoginScreen(
                 viewModel = viewModel,
                 onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount },
-                onNavigateToTodoList = { newToken, newUserId ->
-                    token = newToken
+                onNavigateToTodoList = { _, newUserId ->
                     userId = newUserId
                     currentScreen = Screen.TodoList
                 }
             )
         }
         is Screen.CreateAccount -> {
-            val viewModel: CreateAccountViewModel = viewModel { CreateAccountViewModel(apiService) }
+            val viewModel: CreateAccountViewModel = viewModel { CreateAccountViewModel(apiService, sharedPreferences) }
             CreateAccountScreen(
                 viewModel = viewModel,
                 onNavigateToLogin = { currentScreen = Screen.Login },
-                onNavigateToTodoList = { newToken, newUserId ->
-                    token = newToken
+                onNavigateToTodoList = { _, newUserId ->
                     userId = newUserId
                     currentScreen = Screen.TodoList
                 }

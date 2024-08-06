@@ -9,17 +9,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.assignment1.R
 import com.example.assignment1.api.Todo
 import com.example.assignment1.viewmodels.TodoListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TodoListScreen(
-    viewModel: TodoListViewModel,
-    userId: String
-) {
-    var showBottomSheet by remember { mutableStateOf(false) }
+fun TodoListScreen(viewModel: TodoListViewModel, userId: String) {
+    var showAddDialog by remember { mutableStateOf(false) }
     var newTodoText by remember { mutableStateOf("") }
 
     val todos by viewModel.todos.collectAsState()
@@ -32,12 +31,12 @@ fun TodoListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Todo List") }
+                title = { Text(stringResource(R.string.app_name)) }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showBottomSheet = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Todo")
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_todo))
             }
         }
     ) { innerPadding ->
@@ -53,62 +52,59 @@ fun TodoListScreen(
                 )
             }
         }
-    }
 
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                OutlinedTextField(
-                    value = newTodoText,
-                    onValueChange = { newTodoText = it },
-                    label = { Text("New Todo") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { showBottomSheet = false }) {
-                        Text("Cancel")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+        if (showAddDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text(stringResource(R.string.add_todo)) },
+                text = {
+                    OutlinedTextField(
+                        value = newTodoText,
+                        onValueChange = { newTodoText = it },
+                        label = { Text(stringResource(R.string.new_todo)) }
+                    )
+                },
+                confirmButton = {
                     Button(
                         onClick = {
                             if (newTodoText.isNotBlank()) {
                                 viewModel.createTodo(userId, newTodoText)
                                 newTodoText = ""
-                                showBottomSheet = false
+                                showAddDialog = false
                             }
                         }
                     ) {
-                        Text("Save")
+                        Text(stringResource(R.string.save))
                     }
-                }
-            }
-        }
-    }
-
-    when (todoListState) {
-        is TodoListViewModel.TodoListState.Error -> {
-            AlertDialog(
-                onDismissRequest = { },
-                title = { Text("Error") },
-                text = { Text((todoListState as TodoListViewModel.TodoListState.Error).message) },
-                confirmButton = {
-                    Button(onClick = { viewModel.fetchTodos(userId) }) {
-                        Text("Retry")
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddDialog = false }) {
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
         }
-        else -> {}
+
+        when (todoListState) {
+            is TodoListViewModel.TodoListState.Error -> {
+                AlertDialog(
+                    onDismissRequest = { },
+                    title = { Text(stringResource(R.string.error)) },
+                    text = { Text((todoListState as TodoListViewModel.TodoListState.Error).message) },
+                    confirmButton = {
+                        Button(onClick = { viewModel.fetchTodos(userId) }) {
+                            Text(stringResource(R.string.retry))
+                        }
+                    }
+                )
+            }
+            is TodoListViewModel.TodoListState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            else -> {}
+        }
     }
 }
 

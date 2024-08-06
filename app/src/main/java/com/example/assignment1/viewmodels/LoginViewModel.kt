@@ -1,5 +1,7 @@
 package com.example.assignment1.viewmodels
 
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.assignment1.api.TodoApiService
@@ -8,7 +10,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private val apiService: TodoApiService) : ViewModel() {
+class LoginViewModel(
+    private val apiService: TodoApiService,
+    private val sharedPreferences: SharedPreferences
+) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Initial)
     val loginState: StateFlow<LoginState> = _loginState
 
@@ -17,10 +22,14 @@ class LoginViewModel(private val apiService: TodoApiService) : ViewModel() {
             _loginState.value = LoginState.Loading
             try {
                 val response = apiService.loginUser(UserRequest(email, password))
-                // save token and user ID
-                _loginState.value = LoginState.Success(response.token, response.id)
+                sharedPreferences.edit().apply {
+                    putString("token", response.token)
+                    putString("userId", response.id.toString())
+                    apply()
+                }
+                _loginState.value = LoginState.Success(response.token, response.id.toString())
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Login failed. Please try again.")
+                _loginState.value = LoginState.Error("Login failed: ${e.message}")
             }
         }
     }
