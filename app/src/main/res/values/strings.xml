@@ -6,4 +6,16 @@
     <string name="error_empty_todo">Todo item cannot be empty</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+
+    <string name="login">Log In</string>
+    <string name="create_account">Create Account</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="error_empty_fields">Please enter both email and password</string>
+    <string name="error_login_failed">Login failed. Please try again.</string>
+    <string name="error_create_account_failed">Account creation failed. Please try again.</string>
+    <string name="error_fetch_todos">Failed to fetch todos. Please try again.</string>
+    <string name="error_create_todo">Failed to create todo. Please try again.</string>
+    <string name="error_update_todo">Failed to update todo. Please try again.</string>
+    <string name="retry">Retry</string>
 </resources>
