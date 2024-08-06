@@ -17,7 +17,7 @@ class CreateAccountViewModel(private val apiService: TodoApiService) : ViewModel
             _createAccountState.value = CreateAccountState.Loading
             try {
                 val response = apiService.registerUser(UserRequest(email, password))
-                // Here you would typically save the token and user ID
+                // save token user ID
                 _createAccountState.value = CreateAccountState.Success(response.token, response.id)
             } catch (e: Exception) {
                 _createAccountState.value = CreateAccountState.Error("Account creation failed. Please try again.")
