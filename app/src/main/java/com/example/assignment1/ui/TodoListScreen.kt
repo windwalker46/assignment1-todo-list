@@ -40,17 +40,32 @@ fun TodoListScreen(viewModel: TodoListViewModel, userId: String) {
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            items(todos) { todo ->
-                TodoItem(
-                    todo = todo,
-                    onToggle = { viewModel.updateTodo(userId, todo.copy(completed = !todo.completed)) }
-                )
+        when (todoListState) {
+            is TodoListViewModel.TodoListState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
+            is TodoListViewModel.TodoListState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text((todoListState as TodoListViewModel.TodoListState.Error).message)
+                }
+            }
+            is TodoListViewModel.TodoListState.Success -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    items(todos) { todo ->
+                        TodoItem(
+                            todo = todo,
+                            onToggle = { viewModel.updateTodo(userId, todo.copy(completedRaw = if (todo.completed) 0 else 1)) }
+                        )
+                    }
+                }
+            }
+            else -> {}
         }
 
         if (showAddDialog) {
@@ -84,27 +99,6 @@ fun TodoListScreen(viewModel: TodoListViewModel, userId: String) {
                 }
             )
         }
-
-        when (todoListState) {
-            is TodoListViewModel.TodoListState.Error -> {
-                AlertDialog(
-                    onDismissRequest = { },
-                    title = { Text(stringResource(R.string.error)) },
-                    text = { Text((todoListState as TodoListViewModel.TodoListState.Error).message) },
-                    confirmButton = {
-                        Button(onClick = { viewModel.fetchTodos(userId) }) {
-                            Text(stringResource(R.string.retry))
-                        }
-                    }
-                )
-            }
-            is TodoListViewModel.TodoListState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            else -> {}
-        }
     }
 }
 
@@ -121,6 +115,6 @@ fun TodoItem(todo: Todo, onToggle: () -> Unit) {
             onCheckedChange = { onToggle() }
         )
         Spacer(modifier = Modifier.width(16.dp))
-        Text(todo.text)
+        Text(todo.description)
     }
 }

@@ -1,5 +1,4 @@
 package com.example.assignment1
-/* Ben Tran */
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -42,6 +41,7 @@ class MainActivity : ComponentActivity() {
 fun App(apiService: TodoApiService, sharedPreferences: android.content.SharedPreferences) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
     var userId by remember { mutableStateOf("") }
+    var token by remember { mutableStateOf("") }
 
     when (val screen = currentScreen) {
         is Screen.Login -> {
@@ -49,8 +49,9 @@ fun App(apiService: TodoApiService, sharedPreferences: android.content.SharedPre
             LoginScreen(
                 viewModel = viewModel,
                 onNavigateToCreateAccount = { currentScreen = Screen.CreateAccount },
-                onNavigateToTodoList = { _, newUserId ->
+                onNavigateToTodoList = { newToken, newUserId ->
                     userId = newUserId
+                    token = newToken
                     currentScreen = Screen.TodoList
                 }
             )
@@ -60,14 +61,17 @@ fun App(apiService: TodoApiService, sharedPreferences: android.content.SharedPre
             CreateAccountScreen(
                 viewModel = viewModel,
                 onNavigateToLogin = { currentScreen = Screen.Login },
-                onNavigateToTodoList = { _, newUserId ->
+                onNavigateToTodoList = { newToken, newUserId ->
                     userId = newUserId
+                    token = newToken
                     currentScreen = Screen.TodoList
                 }
             )
         }
         is Screen.TodoList -> {
-            val viewModel: TodoListViewModel = viewModel { TodoListViewModel(apiService) }
+            val viewModel: TodoListViewModel = viewModel {
+                TodoListViewModel(TodoApiService.create(token))
+            }
             TodoListScreen(viewModel = viewModel, userId = userId)
         }
     }

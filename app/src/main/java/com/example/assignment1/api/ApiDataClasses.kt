@@ -1,14 +1,19 @@
 package com.example.assignment1.api
 
+import com.squareup.moshi.Json
+
 data class Todo(
     val id: String,
-    val text: String,
+    val description: String,
+    @Json(name = "completed") val completedRaw: Int
+) {
     val completed: Boolean
-)
+        get() = completedRaw == 1
+}
 
 data class TodoRequest(
-    val text: String,
-    val completed: Boolean
+    val description: String,
+    val completed: Int = 0
 )
 
 data class UserRequest(
@@ -16,7 +21,6 @@ data class UserRequest(
     val password: String,
     val name: String = ""
 )
-
 
 data class UserResponse(
     val token: String,
