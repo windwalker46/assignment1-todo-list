@@ -1,9 +1,10 @@
 package com.example.assignment1.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.assignment1.api.TodoApiService
 import com.example.assignment1.api.Todo
+import com.example.assignment1.api.TodoApiService
 import com.example.assignment1.api.TodoRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,21 +21,29 @@ class TodoListViewModel(private val apiService: TodoApiService) : ViewModel() {
         viewModelScope.launch {
             _todoListState.value = TodoListState.Loading
             try {
-                _todos.value = apiService.getTodos(userId)
+                Log.d("TodoListViewModel", "Fetching todos for user: $userId")
+                val fetchedTodos = apiService.getTodos(userId)
+                _todos.value = fetchedTodos
                 _todoListState.value = TodoListState.Success
+                Log.d("TodoListViewModel", "Successfully fetched ${fetchedTodos.size} todos")
             } catch (e: Exception) {
-                _todoListState.value = TodoListState.Error("Failed to fetch todos. Please try again.")
+                Log.e("TodoListViewModel", "Error fetching todos", e)
+                _todoListState.value = TodoListState.Error("Failed to fetch todos: ${e.localizedMessage}")
             }
         }
     }
 
-    fun createTodo(userId: String, text: String) {
+    fun createTodo(userId: String, description: String) {
         viewModelScope.launch {
             try {
-                val newTodo = apiService.createTodo(userId, TodoRequest(text, false))
+                Log.d("TodoListViewModel", "Creating todo for user: $userId with description: $description")
+                val newTodo = apiService.createTodo(userId, TodoRequest(description))
                 _todos.value = _todos.value + newTodo
+                _todoListState.value = TodoListState.Success
+                Log.d("TodoListViewModel", "Todo created successfully: ${newTodo.id}")
             } catch (e: Exception) {
-                _todoListState.value = TodoListState.Error("Failed to create todo. Please try again.")
+                Log.e("TodoListViewModel", "Error creating todo", e)
+                _todoListState.value = TodoListState.Error("Failed to create todo: ${e.localizedMessage}")
             }
         }
     }
@@ -42,10 +51,12 @@ class TodoListViewModel(private val apiService: TodoApiService) : ViewModel() {
     fun updateTodo(userId: String, todo: Todo) {
         viewModelScope.launch {
             try {
-                val updatedTodo = apiService.updateTodo(userId, todo.id, TodoRequest(todo.text, todo.completed))
+                val updatedTodo = apiService.updateTodo(userId, todo.id, TodoRequest(todo.description, if (todo.completed) 1 else 0))
                 _todos.value = _todos.value.map { if (it.id == updatedTodo.id) updatedTodo else it }
+                _todoListState.value = TodoListState.Success
             } catch (e: Exception) {
-                _todoListState.value = TodoListState.Error("Failed to update todo. Please try again.")
+                Log.e("TodoListViewModel", "Error updating todo", e)
+                _todoListState.value = TodoListState.Error("Failed to update todo: ${e.localizedMessage}")
             }
         }
     }
