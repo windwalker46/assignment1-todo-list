@@ -1,4 +1,5 @@
 package com.example.assignment1
+/* Ben Tran */
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
