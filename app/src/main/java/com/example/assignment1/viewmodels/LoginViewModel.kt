@@ -29,7 +29,9 @@ class LoginViewModel(
                 }
                 _loginState.value = LoginState.Success(response.token, response.id.toString())
             } catch (e: Exception) {
-                _loginState.value = LoginState.Error("Login failed: ${e.message}")
+                val errorMessage = "Login failed: ${e.message}"
+                Log.e("LoginViewModel", errorMessage, e)
+                _loginState.value = LoginState.Error(errorMessage)
             }
         }
     }

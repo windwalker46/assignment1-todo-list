@@ -35,6 +35,7 @@ class TodoListViewModel(private val apiService: TodoApiService) : ViewModel() {
 
     fun createTodo(userId: String, description: String) {
         viewModelScope.launch {
+            _todoListState.value = TodoListState.Loading
             try {
                 Log.d("TodoListViewModel", "Creating todo for user: $userId with description: $description")
                 val newTodo = apiService.createTodo(userId, TodoRequest(description))
@@ -50,10 +51,16 @@ class TodoListViewModel(private val apiService: TodoApiService) : ViewModel() {
 
     fun updateTodo(userId: String, todo: Todo) {
         viewModelScope.launch {
+            _todoListState.value = TodoListState.Loading
             try {
-                val updatedTodo = apiService.updateTodo(userId, todo.id, TodoRequest(todo.description, if (todo.completed) 1 else 0))
+                val updatedTodo = apiService.updateTodo(
+                    userId,
+                    todo.id,
+                    TodoRequest(todo.description, if (todo.completed) 0 else 1)
+                )
                 _todos.value = _todos.value.map { if (it.id == updatedTodo.id) updatedTodo else it }
                 _todoListState.value = TodoListState.Success
+                Log.d("TodoListViewModel", "Todo updated successfully: ${updatedTodo.id}")
             } catch (e: Exception) {
                 Log.e("TodoListViewModel", "Error updating todo", e)
                 _todoListState.value = TodoListState.Error("Failed to update todo: ${e.localizedMessage}")
