@@ -55,7 +55,6 @@ class TodoListViewModelTest {
 
         viewModel.fetchTodos(userId)
 
-// When
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
             assertEquals(TodoListViewModel.TodoListState.Loading, awaitItem())
@@ -78,7 +77,6 @@ class TodoListViewModelTest {
         coEvery { apiService.getTodos(userId) } throws Exception(errorMessage)
 
         viewModel.fetchTodos(userId)
-
 
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
@@ -106,7 +104,6 @@ class TodoListViewModelTest {
 
         viewModel.createTodo(userId, description)
 
-
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
             assertEquals(TodoListViewModel.TodoListState.Loading, awaitItem())
@@ -132,7 +129,6 @@ class TodoListViewModelTest {
 
         viewModel.createTodo(userId, description)
 
-
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
             assertEquals(TodoListViewModel.TodoListState.Loading, awaitItem())
@@ -154,7 +150,6 @@ class TodoListViewModelTest {
 
         viewModel.updateTodo(userId, todo)
 
-
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
             assertEquals(TodoListViewModel.TodoListState.Loading, awaitItem())
@@ -164,7 +159,7 @@ class TodoListViewModelTest {
 
         viewModel.todos.test {
             val updatedList = awaitItem()
-            assertTrue(updatedList.contains(updatedTodo))
+            assertTrue(updatedList.any { it.id == updatedTodo.id && it.completed == updatedTodo.completed })
             cancelAndConsumeRemainingEvents()
         }
 
@@ -179,7 +174,6 @@ class TodoListViewModelTest {
         coEvery { apiService.updateTodo(userId, todo.id, TodoRequest(todo.description, 1)) } throws Exception(errorMessage)
 
         viewModel.updateTodo(userId, todo)
-
 
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())

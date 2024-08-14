@@ -60,7 +60,7 @@ fun TodoListScreen(viewModel: TodoListViewModel, userId: String) {
                     items(todos) { todo ->
                         TodoItem(
                             todo = todo,
-                            onToggle = { viewModel.updateTodo(userId, todo.copy(completedRaw = if (todo.completed) 0 else 1)) }
+                            onToggle = { viewModel.updateTodo(userId, todo) }
                         )
                     }
                 }
