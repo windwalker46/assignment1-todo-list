@@ -53,10 +53,11 @@ class TodoListViewModel(private val apiService: TodoApiService) : ViewModel() {
         viewModelScope.launch {
             _todoListState.value = TodoListState.Loading
             try {
+                val newCompletedStatus = !todo.completed
                 val updatedTodo = apiService.updateTodo(
                     userId,
                     todo.id,
-                    TodoRequest(todo.description, if (todo.completed) 0 else 1)
+                    TodoRequest(todo.description, if (newCompletedStatus) 1 else 0)
                 )
                 _todos.value = _todos.value.map { if (it.id == updatedTodo.id) updatedTodo else it }
                 _todoListState.value = TodoListState.Success
