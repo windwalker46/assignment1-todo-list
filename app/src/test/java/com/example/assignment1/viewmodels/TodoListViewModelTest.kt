@@ -55,7 +55,7 @@ class TodoListViewModelTest {
 
         viewModel.fetchTodos(userId)
 
-
+// When
         viewModel.todoListState.test(timeout = 5.seconds) {
             assertEquals(TodoListViewModel.TodoListState.Initial, awaitItem())
             assertEquals(TodoListViewModel.TodoListState.Loading, awaitItem())
